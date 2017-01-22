@@ -1,0 +1,92 @@
+\documentclass[a4paper, 10pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[makeroom]{cancel}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\usepackage[]{acronym}
+\usepackage{syntax}
+\usepackage{newfloat}
+\usepackage{float}
+%\usepackage[LGRgreek]{mathastext}
+\usepackage[osf,sc]{mathpazo}
+\usepackage{eulervm}
+\usepackage{MnSymbol}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{color}
+\usepackage{algorithm}% http://ctan.org/pkg/algorithms
+\usepackage{algpseudocode}% http://ctan.org/pkg/algorithmicx
+
+\title{DECIDERE TITOLO}
+\author{Tommaso Ceccarini, Federico Schipani}
+\makeindex
+
+\let\syntleft\relax
+\let\syntright\relax
+\grammarparsep=30pt
+\DeclareFloatingEnvironment[
+  fileext   = logr,
+  listname  = {List of Grammars},
+  name      = Grammatica,
+  placement = H
+]{Grammar}
+
+\newtheorem{prop}{Proprietà}
+\newtheorem{defn}{Definizione}
+\newtheorem{theor}{Teorema}[section]
+\numberwithin{equation}{theor}
+
+
+
+\makeatletter
+\newcommand{\newalgname}[1]{%
+  \renewcommand{\ALG@name}{#1}%
+}
+\newalgname{Algoritmo}
+\renewcommand{\listalgorithmname}{Lista di \ALG@name s}
+\makeatother
+
+
+
+\begin{document}
+\maketitle
+\tableofcontents
+\section{test}
+\ac{CTL}
+
+\begin{acronym}
+\acro{CTL}{Computational Tree Logic}
+\acro{LTL}{Linear Temporal Logic}
+\end{acronym}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
