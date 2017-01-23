@@ -1,0 +1,81 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+\usepackage{cvpr}
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{url}
+
+% Include other packages here, before hyperref.
+
+% If you comment hyperref and then uncomment it, you should delete
+% egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
+% run, let it finish, and you should be clear).
+%\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
+
+\cvprfinalcopy % *** Uncomment this line for the final submission
+
+\def\cvprPaperID{****} % *** Enter the CVPR Paper ID here
+\def\httilde{\mbox{\tt\raisebox{-.5ex}{\symbol{126}}}}
+
+% Pages are numbered in submission mode, and unnumbered in camera-ready
+\ifcvprfinal\pagestyle{empty}\fi
+\begin{document}
+
+%%%%%%%%% TITLE
+\title{PC-2016/17 Course Project Template}
+
+\author{Tommaso Ceccarini \\
+E-mail address\\
+{\tt\small tommaso.ceccarini1@stud.unifi.it}
+% For a paper whose authors are all at the same institution,
+% omit the following lines up until the closing ``}''.
+% Additional authors and addresses can be added with ``\and'',
+% just like the second author.
+% To save space, use either the email address or home page, not both
+\and
+Federico Schipani\\
+E-mail address\\
+{\tt\small federico.schipani@stud.unifi.it}
+}
+
+\maketitle
+\thispagestyle{empty}
+
+%%%%%%%%% ABSTRACT
+\begin{abstract}
+   KMeans algorithm is one of the most popular method for clustering analysis.
+   In our work we provide a CUDA implementation that use an Nvidia GPU to solve the clustering problem.
+   We also provide a performance analysis with the purpose of compare the performance of our parallel CUDA implementation with a sequential implementation written in C language.
+\end{abstract}
+
+%%%%%%%%% BODY TEXT
+\section{Introduction}
+KMeans algorithm is one of the most popular method for clustering analysis.
+The purpose of the cluster analysis is that of divide data into meaningfull group, called cluster.
+The resultant cluster should then capture the structure of the data.\par
+KMeans methods attempt to do this by evaluating a similarity measure according to the mean value of
+the data that are cointained in the clusters.
+So, given a set of observation $(\boldsymbol{x_{1}}, \boldsymbol{x_{2}}, \dots,\boldsymbol{x_{N}} )$ where each observation is a $P-dimensional$ real vector, k-means clustering aims to partition the $N$ observation into $K (\leq N)$ sets $\boldsymbol{S} = \{S_{1}, S_{2}, \dots, S_{K}\}$ so as to minimize the within-cluster sum of squares. In other words, its objective is to find: 
+\begin{equation}
+\label{eq:first}
+\operatorname*{arg\, min}_\boldsymbol{S} \displaystyle\sum_{i = 1}^{k} \displaystyle\sum_{x \in S_{i}} ||\boldsymbol{x} - \boldsymbol{\mu}_{i} ||^{2}
+\end{equation}  \cite{wiki:kmeans}
+
+
+\vspace{3cm}
+
+
+
+
+
+\bibliographystyle{plain}
+\bibliography{bib.bib}
+
+
+
+
+\end{document}
