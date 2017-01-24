@@ -8,25 +8,39 @@
 \usepackage{amssymb}
 
 \usepackage{url}
+\usepackage{algorithm}% http://ctan.org/pkg/algorithms
+\usepackage{algpseudocode}% http://ctan.org/pkg/algorithmicx
 
 % Include other packages here, before hyperref.
 
 % If you comment hyperref and then uncomment it, you should delete
 % egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
 % run, let it finish, and you should be clear).
-%\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
+\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
 
 \cvprfinalcopy % *** Uncomment this line for the final submission
 
-\def\cvprPaperID{****} % *** Enter the CVPR Paper ID here
+
 \def\httilde{\mbox{\tt\raisebox{-.5ex}{\symbol{126}}}}
 
 % Pages are numbered in submission mode, and unnumbered in camera-ready
 \ifcvprfinal\pagestyle{empty}\fi
+
+
+
+\makeatletter
+\newcommand{\newalgname}[1]{%
+  \renewcommand{\ALG@name}{#1}%
+}
+\newalgname{Algorithm}% All algorithms will be called "Algorithme"
+\renewcommand{\listalgorithmname}{List of \ALG@name s}
+\makeatother
+
 \begin{document}
 
 %%%%%%%%% TITLE
-\title{PC-2016/17 Course Project Template}
+\title{PC-2016/17 Course Project \\
+Implementation in CUDA of KMeans algorithm}
 
 \author{Tommaso Ceccarini \\
 E-mail address\\
@@ -62,12 +76,54 @@ the data that are cointained in the clusters.
 So, given a set of observation $(\boldsymbol{x_{1}}, \boldsymbol{x_{2}}, \dots,\boldsymbol{x_{N}} )$ where each observation is a $P-dimensional$ real vector, k-means clustering aims to partition the $N$ observation into $K (\leq N)$ sets $\boldsymbol{S} = \{S_{1}, S_{2}, \dots, S_{K}\}$ so as to minimize the within-cluster sum of squares. In other words, its objective is to find: 
 \begin{equation}
 \label{eq:first}
-\operatorname*{arg\, min}_\boldsymbol{S} \displaystyle\sum_{i = 1}^{k} \displaystyle\sum_{x \in S_{i}} ||\boldsymbol{x} - \boldsymbol{\mu}_{i} ||^{2}
-\end{equation}  \cite{wiki:kmeans}
+\operatorname*{arg\, min}_{\boldsymbol{S}} \displaystyle\sum_{i = 1}^{k} \displaystyle\sum_{x \in S_{i}} ||\boldsymbol{x} - \boldsymbol{\mu}_{i} ||^{2}
+\end{equation}  
+where $\mu_i$ is the mean of points in $S_{i}$.\cite{wiki:kmeans}
+\par
+\begin{algorithm}
+\label{alg:kmeans}
+\caption{KMeans}
+\begin{algorithmic}[1]
+\Procedure{KMeansSequential}{$\text{data}[\text{n}][\text{p}]$}
+\State $\text{mean}[\text{k}][\text{p}], \text{oldMean}[\text{k}][\text{p}]$
+\State $\text{assignment}[\text{n}]$
+\State $(\text{mean}, \text{assignment}) \leftarrow initAss(data)$
+\While{$!stop$}
+\State $\text{assignment} \leftarrow calcMin(\text{mean}, \text{data})$
+\State $\text{oldMean} \leftarrow \text{mean}$
+\State $\text{mean} \leftarrow calcMean(\text{assignment}, \text{data})$
+\State $\text{stop} \leftarrow stopCriterion(\text{mean}, \text{oldMean})$
+\EndWhile
+\State \textbf{return} $\text{mean}$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+Algorithm \ref{alg:kmeans} is the pseudocode of an iterative implementation of KMeans algorithm.
+Before the \textit{while} cycle there are the initial assignment step. In this step the first $k$ data are assigned to the first $k$ cluster. A pseudocode of this initial assignment is showed in Algorithm \ref{alg:initialAssignment}
+
+\begin{algorithm}
+\label{alg:initialAssignment}
+\caption{Initial Assignment}
+\begin{algorithmic}[1]
+\Procedure{initAss}{$\text{data}[\text{n}][\text{p}]$}
+\State $\text{mean}[\text{k}][\text{p}]$
+\State $\text{assignment}[\text{n}]$
+\For{$\text{i} = 0; \text{i}<\text{k}; \text{i}++$}
+\State $\text{assignment}[\text{i}] = \text{i}$
+\For{$\text{j} = 0; \text{j} < \text{p}: \text{j}++$} 
+\State $\text{mean}[\text{i}][\text{j}] = \text{data}[\text{i}][\text{j}]$
+\EndFor
+\EndFor
+\State \textbf{return} $\text{(mean, assignment)}$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
 
 
 \vspace{3cm}
 
+
+% section sequential_kmeans (end)
 
 
 
