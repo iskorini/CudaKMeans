@@ -6,17 +6,23 @@
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
-
+\usepackage{listings}
 \usepackage{url}
 \usepackage{algorithm}% http://ctan.org/pkg/algorithms
 \usepackage{algpseudocode}% http://ctan.org/pkg/algorithmicx
-
+\usepackage{verbatim}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage[italian]{babel}
+\usepackage{caption}
+\usepackage{lstcustom}
+\usepackage[scaled=0.8]{beramono}
 % Include other packages here, before hyperref.
 
 % If you comment hyperref and then uncomment it, you should delete
 % egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
 % run, let it finish, and you should be clear).
-\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
+\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,bookmarks=false, colorlinks]{hyperref}
 
 \cvprfinalcopy % *** Uncomment this line for the final submission
 
@@ -26,21 +32,46 @@
 % Pages are numbered in submission mode, and unnumbered in camera-ready
 \ifcvprfinal\pagestyle{empty}\fi
 
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFormat{listing}{\colorbox{gray}{\parbox{\columnwidth}{#1#2#3}}}
+\captionsetup[lstlisting]{format=listing,labelfont={white, bf},textfont=white}
 
-
+\newcommand\myworries[1]{\textbf{\textcolor{red}{#1}}}
 \makeatletter
 \newcommand{\newalgname}[1]{%
   \renewcommand{\ALG@name}{#1}%
 }
-\newalgname{Algorithm}% All algorithms will be called "Algorithme"
-\renewcommand{\listalgorithmname}{List of \ALG@name s}
+\newalgname{Algoritmo}
+\renewcommand{\listalgorithmname}{Lista di \ALG@name s}
+\renewcommand{\lstlistingname}{Codice}
+\renewcommand{\lstlistlistingname}{Lista di codici}
 \makeatother
 
 \begin{document}
-
+\lstdefinestyle{customA}{         
+	basicstyle=\footnotesize\lstfontfamily,
+	emphstyle=\bfseries,
+	language=C,
+	numberstyle=\tiny,          
+	numbersep=5pt,              
+	tabsize=2,                  
+	extendedchars=true,         
+	breaklines=true,            
+	keywordstyle=\bfseries\color{green!50!black},
+	commentstyle=\itshape\color{purple!40!black},
+	frame=b,         
+	stringstyle=\color{orange}\ttfamily, 
+	showspaces=false,           
+	showtabs=false,             
+	xleftmargin=1pt, %prima era 17
+	framexleftmargin=17pt,
+	framexrightmargin=5pt,
+	framexbottommargin=4pt,
+	showstringspaces=false,     
+}
 %%%%%%%%% TITLE
 \title{PC-2016/17 Course Project \\
-Implementation in CUDA of KMeans algorithm}
+Implementazione in CUDA dell'algoritmo KMean}
 
 \author{Tommaso Ceccarini \\
 E-mail address\\
@@ -61,30 +92,29 @@ E-mail address\\
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-   KMeans algorithm is one of the most popular method for clustering analysis.
-   In our work we provide a CUDA implementation that use an Nvidia GPU to solve the clustering problem.
-   We also provide a performance analysis with the purpose of compare the performance of our parallel CUDA implementation with a sequential implementation written in C language.
+	L'algoritmo di KMeans è uno dei più popolari metodi per la clusterizzazione. Nel nostro lavoro forniamo una implementazione in CUDA che fa uso 
+	di GPU Nvidia per l'esecuzione dell'algoritmo. Inoltre forniamo un'analisi delle preformance con lo scopo di comparare la nostra implementazione parallela con una implementazione sequenziale scritta in C.
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
-\section{Introduction}
-KMeans algorithm is one of the most popular method for clustering analysis.
-The purpose of the cluster analysis is that of divide data into meaningfull group, called cluster.
-The resultant cluster should then capture the structure of the data.\par
-KMeans methods attempt to do this by evaluating a similarity measure according to the mean value of
-the data that are cointained in the clusters.
-So, given a set of observation $(\boldsymbol{x_{1}}, \boldsymbol{x_{2}}, \dots,\boldsymbol{x_{N}} )$ where each observation is a $P-dimensional$ real vector, k-means clustering aims to partition the $N$ observation into $K (\leq N)$ sets $\boldsymbol{S} = \{S_{1}, S_{2}, \dots, S_{K}\}$ so as to minimize the within-cluster sum of squares. In other words, its objective is to find: 
+\section{Introduzione}
+L'algoritmo KMeans è uno degli algoritmi di clustering più famosi. Lo scopo del clustering è di dividere dati in gruppi, chiamati cluster.
+I cluster risultanti dall'esecuzione dell'algoritmo cattureranno la struttura dei dati.\par
+I metodi di KMeans riescono ad eseguire l'operazione di clustering valutando una condizione di similarità
+\myworries{KMeans methods attempt to do this by evaluating a similarity measure according to the mean value of
+the data that are cointained in the clusters.}
+Quindi, dato un insieme di dati $(\boldsymbol{x_{1}}, \boldsymbol{x_{2}}, \dots,\boldsymbol{x_{N}} )$ dove ogni dato è un vettore reale di dimensione $P$, lo scopo di KMeans è di partizionare $N$ dati in $K (\leq N)$ insiemi $\boldsymbol{S} = \{S_{1}, S_{2}, \dots, S_{K}\}$ per minimizzare la minima distanza dentro ad i singoli cluster. In altre parole il suo obiettivo è trovare: 
 \begin{equation}
 \label{eq:first}
 \operatorname*{arg\, min}_{\boldsymbol{S}} \displaystyle\sum_{i = 1}^{k} \displaystyle\sum_{x \in S_{i}} ||\boldsymbol{x} - \boldsymbol{\mu}_{i} ||^{2}
 \end{equation}  
-where $\mu_i$ is the mean of points in $S_{i}$.\cite{wiki:kmeans}
+dove $\mu_i$ è la media dei punti in $S_{i}$.\cite{wiki:kmeans}
 \par
 \begin{algorithm}
-\label{alg:kmeans}
 \caption{KMeans}
+\label{alg:kmeans}
 \begin{algorithmic}[1]
-\Procedure{KMeansSequential}{$\text{data}[\text{n}][\text{p}]$}
+\Procedure{KMeans}{$\text{data}[\text{n}][\text{p}]$}
 \State $\text{mean}[\text{k}][\text{p}], \text{oldMean}[\text{k}][\text{p}]$
 \State $\text{assignment}[\text{n}]$
 \State $(\text{mean}, \text{assignment}) \leftarrow initAss(data)$
@@ -92,18 +122,27 @@ where $\mu_i$ is the mean of points in $S_{i}$.\cite{wiki:kmeans}
 \State $\text{assignment} \leftarrow calcMin(\text{mean}, \text{data})$
 \State $\text{oldMean} \leftarrow \text{mean}$
 \State $\text{mean} \leftarrow calcMean(\text{assignment}, \text{data})$
-\State $\text{stop} \leftarrow stopCriterion(\text{mean}, \text{oldMean})$
+\State $\text{stop} \leftarrow stopCrit(\text{mean}, \text{oldMean})$
 \EndWhile
 \State \textbf{return} $\text{mean}$
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
-Algorithm \ref{alg:kmeans} is the pseudocode of an iterative implementation of KMeans algorithm.
-Before the \textit{while} cycle there are the initial assignment step. In this step the first $k$ data are assigned to the first $k$ cluster. A pseudocode of this initial assignment is showed in Algorithm \ref{alg:initialAssignment}
+L'Algoritmo \ref{alg:kmeans} rappresenta lo pseudocodice di un'implementazione iterativa dell'algoritmo KMeans.
 
+I principali passi dell'algoritmo sono:
+\begin{enumerate}
+	\item{Selezionare casualmente K dati e renderli la media iniziale dei K cluster. Questo passo è usualmente chiamato \textit{initialization}.}
+	\item{Assign each data to the cluster whose mean yields the least within-cluster sum of squares. This step is usually called \textit{assignment}.}
+	\item{Compute the new means to be the centroids of the data in the new clusters. This step is usually called \textit{update}.}
+	\item{Repeat step 2 and 3 until assignment no longer change or only few data change during the last iteration. }
+\end{enumerate}
+\subsection{KMeans sequenziale}
+
+Prima del ciclo \textit{while} c'è un passo di assengazione iniziale. In questo step i primi $K$ dati sono assegnati ai primi $K$ cluster. Uno pseudocdice di questo assegnamento iniziale è mostrato in Algoritmo \ref{alg:initialAssignment}
 \begin{algorithm}
-\label{alg:initialAssignment}
 \caption{Initial Assignment}
+\label{alg:initialAssignment}
 \begin{algorithmic}[1]
 \Procedure{initAss}{$\text{data}[\text{n}][\text{p}]$}
 \State $\text{mean}[\text{k}][\text{p}]$
@@ -119,13 +158,64 @@ Before the \textit{while} cycle there are the initial assignment step. In this s
 \end{algorithmic}
 \end{algorithm}
 
+Dopo questo step iniziale di assegnamento parte il vero e proprio algoritmo. Nella prima parte del ciclo \textit{while} viene calcolata la distanza euclidea minima tra ognuno dei dati e tutti i cluster. Successivamente si assegna ogni dato al cluster più vicino.
+Il passo successivo consiste nel ricalcolare le nuove medie dei cluster, secondo la \eqref{eq:mean}. 
+\begin{equation}
+\label{eq:mean}
+m_i^{(t+1)} = \frac{1}{|S^{(t)}_i|} \displaystyle\sum_{x_{j} \in S^{(t)}_i} x_j 
+\end{equation}
 
-\vspace{3cm}
+
+L'ultimo step è il criterio d'arresto. In questo semplice algoritmo, mostrato in \ref{alg:stopCriterion}, si iterano l'attuale matrice dei cluster e la matrice dei cluster calcolata al passo $i-1$. Quando $ActualValue - OldValue$ eccede una prefissata tolleranza $\epsilon$ il metodo ritorna il valore \textit{false}. Questo valore di ritorno porterà ad un'altra iterazione del ciclo \textit{while} esterno.
+
+\begin{algorithm}
+\caption{Stop Criterion}
+\label{alg:stopCriterion}
+\begin{algorithmic}[1]
+\Procedure{stopCrit}{$\text{mean}[\text{k}][\text{p}], \text{oldMean}[\text{k}][\text{p}]$}
+\ForAll{value, oldValue in  mean, oldMean}
+\If{$abs(value - oldValue) > \epsilon$}
+\State \textbf{return} false
+\EndIf
+\EndFor
+\State \textbf{return} true
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
 
 
+\section{Implementazione}
+\subsection{Come vengono rappresentati i dati ed i cluster}
+Le due differenti implementazioni dell'algoritmo di KMeans, riportate in sezione  ~\ref{sub:Cimpl} e ~\ref{sub:cudaimpl}, risolvono il problema del clustering per  un valore arbitrario del parametro $P$. Tuttavia le analisi delle performance, mostrate in Sezione~\ref{sec:performanceanalysis}, sono state effettuate nel caso in cui $P=2$, ovvero il caso in cui i dati sono vettori bidimensionali. \par
+Le due maggiori strutture su cui il codice lavora sono la matrice dei dati e la matrice dei centroidi, rispettivamente di dimensione $N*P$ e $K*P$. In entrambe le implementazione viene usato anche un vettore chiamato \textit{assignment} che, per tutti gli $N$ dati, memorizza l'indice del cluster al quale appartengono.
+
+\myworries{mettere il codice delle dichiarazioni delle tre strutture?}
+\subsubsection{Come viene generato il dataset}
+Dopo che sono state dichiarate, e successivamente istanziate, le strutture che sono necessarie per rappresentare i dati e i centroidi viene effettuata una genrazione pseudocasuale dei dati. Questa generazione viene effettuata in maniera parallela attraverso le API CUDA, in particolare è stata usata la libreria cuRAND. Il metodo che è stato sviluppato per questo scopo è \texttt{generateRandomDataOnDevice()}. Quesot metodo usa un seed prefissato e, con l'aiuto di un altro metodo che fa parte della libreria cuRAND, genera i valori del dataset. Nella Sezione~\ref{sec:performanceanalysis} sono mostrate le analisi delle performance nel caso in cui i dati sono generati con una distribuzione normale o uniforme. 
+\myworries{mettere il codice del metodo che generate i dati}
 % section sequential_kmeans (end)
+\subsection{Una implementazione sequenziale in C}
+\label{sub:Cimpl}
+
+\subsubsection*{Lo step di inizializzazione}
+Dopo aver generato casualmente il dataset nella memoria globale del device è necessario istanziare la memoria richiesta per memorizzare la matrice dei dati e dei centrodi nella memoria dell'host. Inoltre, per come funziona l'algoritmo, è necessaria un'altra matrice che memorizza il valore della media durante la precedente iterazione. Questa matrice è usata per implementare il criterio d'arresto. L'inizializzazione è effettuata da un semplice ciclo for che assegna \texttt{data[i][j]} a \texttt{mean[i][j]} per  \texttt{i} tra $0$ e $K-1$. Questa strategia d'assegnamento è motivata dal fatto che i dati sono generati casualmente.
+\myworries{codice dell'istanziazione delle matrice e ciclo for che effettua l'inizializzazione}
+\subsubsection*{Lo step di assegnamento}
+\subsubsection*{Lo step di aggiornamento}
+\subsubsection*{Il criterio d'arresto}
 
 
+
+ESEMPIO ESEMPIO ESEMPIO CODICE~\ref{code:ex}
+
+
+\lstinputlisting[firstline = 16, lastline = 36, caption = blablabla, style = customA, label = {code:ex}]{Codice/sequential.c}
+
+\subsection{Parallel CUDA Implementation}
+\label{sub:cudaimpl}
+\section{Performance analysis}
+\label{sec:performanceanalysis}
+\vspace{3cm}
 
 
 \bibliographystyle{plain}
