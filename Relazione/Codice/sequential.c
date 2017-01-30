@@ -24,13 +24,11 @@ int kMeansSequential(float *devData) {
 					distance +=pow(
 							(hostData[i * COMPONENTS + j]
 									- mean[z * COMPONENTS + j]),2);
-
 				}
 				if (distance < minDistance) {
 					minIndex = z;
 					minDistance = distance;
 				}
-
 			}
 			assignment[i] = minIndex;
 		}
